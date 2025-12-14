@@ -14,3 +14,10 @@ coverage
 !README.md
 !README-DOCKER.md
 !QUICK-START-DOCKER.md
+scripts
+backend
+docker-compose*.yml
+portainer-stack.yml
+generate-random-ports.*
+push-to-github.*
+start-docker.*
