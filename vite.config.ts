@@ -18,8 +18,18 @@ export default defineConfig({
     commonjsOptions: {
       transformMixedEsModules: true,
     },
+    rollupOptions: {
+      onwarn(warning, warn) {
+        // Ignorer les avertissements sur les imports externes
+        if (warning.code === 'EXTERNAL') return;
+        warn(warning);
+      },
+    },
   },
   optimizeDeps: {
     exclude: ["@tauri-apps/api"],
+  },
+  ssr: {
+    noExternal: ["@tauri-apps/api"],
   },
 });
