@@ -159,9 +159,17 @@ export const useGameStore = create<GameStore>((set, get) => ({
     // Pour le build web, cette partie ne s'exécutera jamais car __TAURI__ n'existe pas
     if (typeof window !== 'undefined' && (window as any).__TAURI__) {
       try {
-        // Import dynamique - seulement disponible dans Tauri
-        // En version web, cet import échouera silencieusement avec .catch()
-        const tauriModule = await import("@tauri-apps/api/tauri").catch(() => null);
+        // Import dynamique avec vérification de disponibilité
+        // En version web/Docker, @tauri-apps/api n'est pas installé, donc on ignore
+        let tauriModule: any = null;
+        try {
+          // @ts-ignore - Module peut ne pas exister en version web
+          tauriModule = await import("@tauri-apps/api/tauri");
+        } catch {
+          // Module non disponible (version web)
+          return;
+        }
+        
         if (tauriModule?.invoke) {
           if (game.executablePath) {
             await tauriModule.invoke("launch_game", { path: game.executablePath });

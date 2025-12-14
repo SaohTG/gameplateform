@@ -10,15 +10,16 @@ COPY vite.config.ts ./
 COPY tailwind.config.js ./
 COPY postcss.config.js ./
 
-# Installer toutes les dépendances
-RUN npm install --no-audit --no-fund
+# Installer toutes les dépendances SAUF @tauri-apps/api pour éviter les problèmes de build
+RUN npm install --no-audit --no-fund --ignore-scripts && \
+    npm uninstall @tauri-apps/api @tauri-apps/cli 2>/dev/null || true
 
 # Copier le code source
 COPY src ./src
 COPY index.html ./
 COPY public ./public
 
-# Build l'application - afficher toutes les erreurs directement
+# Build l'application
 RUN npm run build:web
 
 # Vérifier que dist existe
