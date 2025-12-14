@@ -19,27 +19,26 @@ COPY src ./src
 COPY index.html ./
 COPY public ./public
 
-# Build l'application - capturer TOUTES les sorties
-RUN npm run build:web 2>&1 | tee /tmp/build-output.log || { \
+# Build l'application - ne pas continuer si le build échoue
+RUN npm run build:web || { \
       echo "========================================="; \
-      echo "BUILD FAILED - Full output:"; \
+      echo "BUILD FAILED - Error details:"; \
       echo "========================================="; \
-      cat /tmp/build-output.log; \
+      echo "Node version: $(node --version)"; \
+      echo "NPM version: $(npm --version)"; \
       echo "========================================="; \
-      echo "Node version:"; \
-      node --version; \
-      echo "NPM version:"; \
-      npm --version; \
+      echo "Checking if dist exists:"; \
+      ls -la dist/ 2>&1 || echo "dist directory does not exist"; \
       echo "========================================="; \
-      echo "Package.json scripts:"; \
-      cat package.json | grep -A 10 '"scripts"'; \
+      echo "Current directory contents:"; \
+      ls -la; \
       echo "========================================="; \
       exit 1; \
     }
 
-# Vérifier que dist existe
+# Vérifier que dist existe (ne devrait jamais arriver ici si le build a échoué)
 RUN if [ ! -d "dist" ]; then \
-      echo "ERROR: dist directory not found!" && \
+      echo "ERROR: dist directory was not created after build!" && \
       ls -la && \
       exit 1; \
     fi && \
