@@ -18,12 +18,29 @@ COPY src ./src
 COPY index.html ./
 COPY public ./public
 
-# Build l'application - capturer toutes les sorties
-RUN echo "=== Starting build ===" && \
-    npm run build:web 2>&1 | tee build.log && \
-    echo "=== Build completed ===" && \
-    echo "=== Checking dist directory ===" && \
-    ls -la dist/ || (echo "=== DIST DIRECTORY NOT FOUND ===" && cat build.log && exit 1) && \
+# Build l'application avec capture d'erreur complète
+RUN npm run build:web > build.log 2>&1; \
+    BUILD_EXIT=$?; \
+    echo "=== BUILD EXIT CODE: $BUILD_EXIT ==="; \
+    echo "=== BUILD LOG START ==="; \
+    cat build.log; \
+    echo "=== BUILD LOG END ==="; \
+    if [ $BUILD_EXIT -ne 0 ]; then \
+      echo "=== BUILD FAILED ==="; \
+      echo "=== Checking files ==="; \
+      ls -la; \
+      echo "=== Checking src ==="; \
+      ls -la src/ || true; \
+      exit 1; \
+    fi; \
+    echo "=== Checking dist directory ==="; \
+    if [ ! -d "dist" ]; then \
+      echo "=== DIST DIRECTORY NOT FOUND ==="; \
+      echo "=== Current directory contents ==="; \
+      ls -la; \
+      exit 1; \
+    fi; \
+    ls -la dist/; \
     echo "=== Build successful ==="
 
 # Production stage

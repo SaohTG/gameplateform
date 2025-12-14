@@ -18,23 +18,14 @@ export default defineConfig({
     commonjsOptions: {
       transformMixedEsModules: true,
     },
-    rollupOptions: {
-      // Exclure @tauri-apps/api du bundle
-      external: (id) => {
-        if (id.startsWith('@tauri-apps/')) {
-          return true;
-        }
-        return false;
-      },
-    },
   },
   optimizeDeps: {
     exclude: ["@tauri-apps/api"],
   },
   resolve: {
     alias: {
-      // Stub pour @tauri-apps/api en version web
-      '@tauri-apps/api/tauri': new URL('./src/utils/tauri-stub.ts', import.meta.url).href,
+      // Stub pour @tauri-apps/api en version web - utiliser un chemin relatif simple
+      '@tauri-apps/api/tauri': './src/utils/tauri-stub.ts',
     },
   },
 });
