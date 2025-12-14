@@ -156,10 +156,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
     
     // Si on est dans Tauri, utiliser l'API Tauri
     // Note: @tauri-apps/api n'est disponible que dans l'environnement Tauri
-    // Pour le build web, cette partie ne s'exécutera jamais
-    if (typeof window !== 'undefined' && '__TAURI__' in window) {
+    // Pour le build web, cette partie ne s'exécutera jamais car __TAURI__ n'existe pas
+    if (typeof window !== 'undefined' && (window as any).__TAURI__) {
       try {
-        // Utiliser le stub en version web, le vrai module en version Tauri
+        // Import dynamique - seulement disponible dans Tauri
+        // En version web, cet import échouera silencieusement avec .catch()
         const tauriModule = await import("@tauri-apps/api/tauri").catch(() => null);
         if (tauriModule?.invoke) {
           if (game.executablePath) {
@@ -169,7 +170,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
           }
         }
       } catch (error) {
-        console.log("Erreur lors du lancement du jeu:", error);
+        // Ignorer les erreurs en version web
+        console.log("Lancement de jeu non disponible en version web");
       }
     }
   },

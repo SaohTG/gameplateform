@@ -22,11 +22,4 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ["@tauri-apps/api"],
   },
-  resolve: {
-    alias: {
-      // Stub pour @tauri-apps/api en version web
-      // Utiliser un chemin relatif simple qui fonctionne avec Vite
-      '@tauri-apps/api/tauri': '/src/utils/tauri-stub.ts',
-    },
-  },
 });
