@@ -3,13 +3,13 @@ FROM node:20-alpine
 WORKDIR /app
 
 # Copier les fichiers de dépendances
-COPY package*.json ./
+COPY package.json ./
 
-# Installer les dépendances
-RUN npm ci --only=production
+# Installer les dépendances de production
+RUN npm install --only=production --no-audit --no-fund
 
 # Copier le code source
-COPY . .
+COPY src/ ./src/
 
 # Exposer le port
 EXPOSE 3001
