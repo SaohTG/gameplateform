@@ -4,17 +4,16 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 # Installer les dépendances système nécessaires
-RUN apk add --no-cache libc6-compat
+RUN apk add --no-cache libc6-compat python3 make g++
 
 # Copier les fichiers de configuration
-COPY package.json ./
-COPY tsconfig.json ./
-COPY tsconfig.node.json ./
+COPY package.json package-lock.json* ./
+COPY tsconfig.json tsconfig.node.json ./
 COPY vite.config.ts ./
 COPY tailwind.config.js ./
 COPY postcss.config.js ./
 
-# Installer toutes les dépendances (y compris devDependencies pour le build)
+# Installer toutes les dépendances
 RUN npm install --no-audit --no-fund
 
 # Copier le code source
@@ -23,7 +22,6 @@ COPY index.html ./
 COPY public ./public
 
 # Build l'application
-# Note: On utilise vite build directement (sans tsc) pour éviter les erreurs TypeScript strictes
 RUN npm run build
 
 # Production stage
@@ -40,4 +38,3 @@ EXPOSE 80
 
 # Démarrer nginx
 CMD ["nginx", "-g", "daemon off;"]
-
