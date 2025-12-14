@@ -21,18 +21,16 @@ COPY public ./public
 # Build l'application - capturer toutes les sorties
 RUN set -e; \
     echo "=== Starting build ==="; \
-    npm run build || { \
+    npm run build:web 2>&1 | tee build.log || { \
       echo "=== BUILD FAILED ==="; \
+      echo "=== Full build log ==="; \
+      cat build.log; \
       echo "=== npm version ==="; \
       npm --version; \
       echo "=== node version ==="; \
       node --version; \
-      echo "=== package.json ==="; \
-      cat package.json; \
-      echo "=== vite.config.ts ==="; \
-      cat vite.config.ts || true; \
-      echo "=== Checking src files ==="; \
-      find src -type f -name "*.ts" -o -name "*.tsx" | head -20; \
+      echo "=== Checking installed packages ==="; \
+      npm list --depth=0 || true; \
       exit 1; \
     }
 
