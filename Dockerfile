@@ -13,20 +13,28 @@ COPY postcss.config.js ./
 # Installer toutes les dépendances
 RUN npm install --no-audit --no-fund
 
-# Afficher la version de Node et npm
-RUN node --version && npm --version
-
 # Copier le code source
 COPY src ./src
 COPY index.html ./
 COPY public ./public
 
-# Lister les fichiers pour debug
-RUN echo "=== Files in src ===" && ls -la src/ && \
-    echo "=== Files in src/components ===" && ls -la src/components/ || true
-
-# Build l'application avec sortie détaillée
-RUN npm run build 2>&1
+# Build l'application - capturer toutes les sorties
+RUN set -e; \
+    echo "=== Starting build ==="; \
+    npm run build || { \
+      echo "=== BUILD FAILED ==="; \
+      echo "=== npm version ==="; \
+      npm --version; \
+      echo "=== node version ==="; \
+      node --version; \
+      echo "=== package.json ==="; \
+      cat package.json; \
+      echo "=== vite.config.ts ==="; \
+      cat vite.config.ts || true; \
+      echo "=== Checking src files ==="; \
+      find src -type f -name "*.ts" -o -name "*.tsx" | head -20; \
+      exit 1; \
+    }
 
 # Production stage
 FROM nginx:alpine

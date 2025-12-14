@@ -171,6 +171,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
         console.log("Erreur lors du lancement du jeu:", error);
       }
     } else {
+      // Version web - le stub sera utilisé
       console.log("Lancement de jeu non disponible en version web");
     }
   },
