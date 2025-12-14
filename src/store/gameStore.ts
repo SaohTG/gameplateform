@@ -155,21 +155,14 @@ export const useGameStore = create<GameStore>((set, get) => ({
     }
     
     // Si on est dans Tauri, utiliser l'API Tauri
-    // Note: @tauri-apps/api n'est disponible que dans l'environnement Tauri
-    // Pour le build web, cette partie ne s'exécutera jamais car __TAURI__ n'existe pas
-    if (typeof window !== 'undefined' && (window as any).__TAURI__) {
+    // Note: Cette fonctionnalité n'est disponible que dans la version desktop Tauri
+    // En version web, cette partie est complètement désactivée pour éviter les problèmes de build
+    const isTauri = typeof window !== 'undefined' && (window as any).__TAURI__;
+    if (isTauri) {
+      // Utiliser Function constructor pour éviter que Vite analyse cet import
       try {
-        // Import dynamique avec vérification de disponibilité
-        // En version web/Docker, @tauri-apps/api n'est pas installé, donc on ignore
-        let tauriModule: any = null;
-        try {
-          // @ts-ignore - Module peut ne pas exister en version web
-          tauriModule = await import("@tauri-apps/api/tauri");
-        } catch {
-          // Module non disponible (version web)
-          return;
-        }
-        
+        const loadTauri = new Function('return import("@tauri-apps/api/tauri")');
+        const tauriModule = await loadTauri();
         if (tauriModule?.invoke) {
           if (game.executablePath) {
             await tauriModule.invoke("launch_game", { path: game.executablePath });
@@ -178,8 +171,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
           }
         }
       } catch (error) {
-        // Ignorer les erreurs en version web
-        console.log("Lancement de jeu non disponible en version web");
+        console.log("Erreur lors du lancement du jeu:", error);
       }
     }
   },
