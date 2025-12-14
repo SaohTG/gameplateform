@@ -19,20 +19,12 @@ COPY index.html ./
 COPY public ./public
 
 # Build l'application - capturer toutes les sorties
-RUN set -e; \
-    echo "=== Starting build ==="; \
-    npm run build:web 2>&1 | tee build.log || { \
-      echo "=== BUILD FAILED ==="; \
-      echo "=== Full build log ==="; \
-      cat build.log; \
-      echo "=== npm version ==="; \
-      npm --version; \
-      echo "=== node version ==="; \
-      node --version; \
-      echo "=== Checking installed packages ==="; \
-      npm list --depth=0 || true; \
-      exit 1; \
-    }
+RUN echo "=== Starting build ===" && \
+    npm run build:web 2>&1 | tee build.log && \
+    echo "=== Build completed ===" && \
+    echo "=== Checking dist directory ===" && \
+    ls -la dist/ || (echo "=== DIST DIRECTORY NOT FOUND ===" && cat build.log && exit 1) && \
+    echo "=== Build successful ==="
 
 # Production stage
 FROM nginx:alpine
