@@ -10,31 +10,36 @@ COPY vite.config.ts ./
 COPY tailwind.config.js ./
 COPY postcss.config.js ./
 
-# Installer toutes les dépendances SAUF @tauri-apps/api pour éviter les problèmes de build
+# Installer toutes les dépendances SAUF @tauri-apps/api
 RUN npm install --no-audit --no-fund --ignore-scripts && \
     npm uninstall @tauri-apps/api @tauri-apps/cli 2>/dev/null || true
-
-# Afficher les packages installés
-RUN echo "=== Installed packages ===" && npm list --depth=0
 
 # Copier le code source
 COPY src ./src
 COPY index.html ./
 COPY public ./public
 
-# Vérifier que les fichiers sont présents
-RUN echo "=== Checking source files ===" && \
-    ls -la src/ && \
-    ls -la src/components/ && \
-    cat package.json | grep -A 5 "scripts"
-
-# Build l'application avec sortie complète
-RUN set -x && npm run build:web
+# Build l'application - capturer TOUTES les sorties
+RUN npm run build:web 2>&1 | tee /tmp/build-output.log || { \
+      echo "========================================="; \
+      echo "BUILD FAILED - Full output:"; \
+      echo "========================================="; \
+      cat /tmp/build-output.log; \
+      echo "========================================="; \
+      echo "Node version:"; \
+      node --version; \
+      echo "NPM version:"; \
+      npm --version; \
+      echo "========================================="; \
+      echo "Package.json scripts:"; \
+      cat package.json | grep -A 10 '"scripts"'; \
+      echo "========================================="; \
+      exit 1; \
+    }
 
 # Vérifier que dist existe
 RUN if [ ! -d "dist" ]; then \
       echo "ERROR: dist directory not found!" && \
-      echo "=== Current directory ===" && \
       ls -la && \
       exit 1; \
     fi && \
