@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: jeux-ami-backend
+    restart: unless-stopped
+    ports:
+      - "${BACKEND_PORT:-0}:3001"
+    environment:
+      - PORT=3001
+      - NODE_ENV=production
+    networks:
+      - jeux-ami-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    labels:
+      - "com.docker.compose.project=jeux-ami"
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend.rule=Host(`api.jeux-ami.local`)"
+      - "traefik.http.routers.backend.entrypoints=web"
+      - "traefik.http.services.backend.loadbalancer.server.port=3001"
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: jeux-ami-frontend
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-0}:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - jeux-ami-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    labels:
+      - "com.docker.compose.project=jeux-ami"
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=Host(`jeux-ami.local`)"
+      - "traefik.http.routers.frontend.entrypoints=web"
+      - "traefik.http.services.frontend.loadbalancer.server.port=80"
+
+networks:
+  jeux-ami-network:
+    driver: bridge
+    name: jeux-ami-network
+

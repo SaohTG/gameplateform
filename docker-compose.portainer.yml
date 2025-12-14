@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  backend:
+    image: jeux-ami-backend:latest
+    container_name: jeux-ami-backend
+    restart: unless-stopped
+    ports:
+      - "${BACKEND_PORT:-0}:3001"
+    environment:
+      - PORT=3001
+      - NODE_ENV=production
+    networks:
+      - jeux-ami-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    volumes:
+      - jeux-ami-data:/app/data
+    labels:
+      - "com.docker.compose.project=jeux-ami"
+      - "com.centurylinklabs.watchtower.enable=true"
+
+  frontend:
+    image: jeux-ami-frontend:latest
+    container_name: jeux-ami-frontend
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-0}:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - jeux-ami-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    labels:
+      - "com.docker.compose.project=jeux-ami"
+      - "com.centurylinklabs.watchtower.enable=true"
+
+volumes:
+  jeux-ami-data:
+    driver: local
+
+networks:
+  jeux-ami-network:
+    driver: bridge
+    name: jeux-ami-network
+

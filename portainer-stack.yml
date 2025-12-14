@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  backend:
+    image: jeux-ami-backend:latest
+    container_name: jeux-ami-backend
+    restart: unless-stopped
+    ports:
+      - "${BACKEND_PORT:-0}:3001"
+    environment:
+      - PORT=3001
+      - NODE_ENV=production
+    networks:
+      - jeux-ami-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    volumes:
+      - jeux-ami-data:/app/data
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+
+  frontend:
+    image: jeux-ami-frontend:latest
+    container_name: jeux-ami-frontend
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-0}:80"
+    depends_on:
+      - backend
+    networks:
+      - jeux-ami-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+
+volumes:
+  jeux-ami-data:
+    driver: local
+
+networks:
+  jeux-ami-network:
+    driver: bridge
+
