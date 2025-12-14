@@ -2,7 +2,9 @@ version: '3.8'
 
 services:
   backend:
-    image: jeux-ami-backend:latest
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
     container_name: jeux-ami-backend
     restart: unless-stopped
     ports:
@@ -25,7 +27,9 @@ services:
       - "com.centurylinklabs.watchtower.enable=true"
 
   frontend:
-    image: jeux-ami-frontend:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: jeux-ami-frontend
     restart: unless-stopped
     ports:

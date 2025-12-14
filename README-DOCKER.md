@@ -106,10 +106,12 @@ docker-compose up -d --build
 
 ### Avec Portainer
 
-1. Allez dans **Stacks** > **jeux-ami**
-2. Cliquez sur **Editor**
-3. Modifiez la version des images si nécessaire
-4. Cliquez sur **Update the stack**
+1. Allez dans **Stacks** > **Add stack**
+2. Nommez : `jeux-ami`
+3. Collez le contenu de `portainer-stack.yml` dans l'éditeur web
+4. Cliquez sur **Deploy the stack**
+
+**Note** : Les images seront construites localement (pas téléchargées depuis Docker Hub). Voir [PORTAINER-GUIDE.md](PORTAINER-GUIDE.md) pour plus de détails.
 
 ## Logs
 
