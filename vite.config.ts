@@ -24,7 +24,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      // Stub pour @tauri-apps/api en version web - utiliser un chemin relatif simple
+      // Stub pour @tauri-apps/api en version web
       '@tauri-apps/api/tauri': './src/utils/tauri-stub.ts',
     },
   },
