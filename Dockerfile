@@ -18,30 +18,30 @@ COPY src ./src
 COPY index.html ./
 COPY public ./public
 
-# Build l'application avec capture d'erreur complète
-RUN npm run build:web > build.log 2>&1; \
-    BUILD_EXIT=$?; \
-    echo "=== BUILD EXIT CODE: $BUILD_EXIT ==="; \
-    echo "=== BUILD LOG START ==="; \
-    cat build.log; \
-    echo "=== BUILD LOG END ==="; \
-    if [ $BUILD_EXIT -ne 0 ]; then \
-      echo "=== BUILD FAILED ==="; \
-      echo "=== Checking files ==="; \
-      ls -la; \
-      echo "=== Checking src ==="; \
-      ls -la src/ || true; \
+# Build l'application - afficher toutes les erreurs
+RUN npm run build:web || ( \
+      echo "=== BUILD FAILED ===" && \
+      echo "=== npm version ===" && \
+      npm --version && \
+      echo "=== node version ===" && \
+      node --version && \
+      echo "=== package.json ===" && \
+      cat package.json && \
+      echo "=== vite.config.ts ===" && \
+      cat vite.config.ts && \
+      echo "=== Checking if dist exists ===" && \
+      ls -la dist/ 2>&1 || echo "dist directory does not exist" && \
+      exit 1 \
+    )
+
+# Vérifier que dist existe
+RUN if [ ! -d "dist" ]; then \
+      echo "ERROR: dist directory was not created!" && \
+      ls -la && \
       exit 1; \
-    fi; \
-    echo "=== Checking dist directory ==="; \
-    if [ ! -d "dist" ]; then \
-      echo "=== DIST DIRECTORY NOT FOUND ==="; \
-      echo "=== Current directory contents ==="; \
-      ls -la; \
-      exit 1; \
-    fi; \
-    ls -la dist/; \
-    echo "=== Build successful ==="
+    fi && \
+    echo "=== Build successful ===" && \
+    ls -la dist/
 
 # Production stage
 FROM nginx:alpine
