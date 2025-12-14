@@ -18,21 +18,21 @@ COPY src ./src
 COPY index.html ./
 COPY public ./public
 
-# Build l'application - afficher toutes les erreurs
-RUN npm run build:web || ( \
-      echo "=== BUILD FAILED ===" && \
-      echo "=== npm version ===" && \
-      npm --version && \
-      echo "=== node version ===" && \
-      node --version && \
-      echo "=== package.json ===" && \
-      cat package.json && \
-      echo "=== vite.config.ts ===" && \
-      cat vite.config.ts && \
-      echo "=== Checking if dist exists ===" && \
-      ls -la dist/ 2>&1 || echo "dist directory does not exist" && \
-      exit 1 \
-    )
+# Build l'application avec sortie complète
+RUN echo "=== Starting build ===" && \
+    npm run build:web 2>&1 | tee /tmp/build.log; \
+    EXIT_CODE=${PIPESTATUS[0]}; \
+    echo "=== Build exit code: $EXIT_CODE ==="; \
+    echo "=== Full build output ==="; \
+    cat /tmp/build.log; \
+    if [ $EXIT_CODE -ne 0 ]; then \
+      echo "=== BUILD FAILED ==="; \
+      echo "=== Checking files ==="; \
+      ls -la; \
+      echo "=== Checking src ==="; \
+      ls -la src/ || true; \
+      exit 1; \
+    fi
 
 # Vérifier que dist existe
 RUN if [ ! -d "dist" ]; then \
