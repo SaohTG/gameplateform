@@ -1,13 +1,10 @@
 # Build stage
-FROM node:20-alpine AS builder
+FROM node:20 AS builder
 
 WORKDIR /app
 
-# Installer les dépendances système nécessaires
-RUN apk add --no-cache libc6-compat python3 make g++
-
 # Copier les fichiers de configuration
-COPY package.json package-lock.json* ./
+COPY package.json ./
 COPY tsconfig.json tsconfig.node.json ./
 COPY vite.config.ts ./
 COPY tailwind.config.js ./
@@ -16,13 +13,20 @@ COPY postcss.config.js ./
 # Installer toutes les dépendances
 RUN npm install --no-audit --no-fund
 
+# Afficher la version de Node et npm
+RUN node --version && npm --version
+
 # Copier le code source
 COPY src ./src
 COPY index.html ./
 COPY public ./public
 
-# Build l'application
-RUN npm run build
+# Lister les fichiers pour debug
+RUN echo "=== Files in src ===" && ls -la src/ && \
+    echo "=== Files in src/components ===" && ls -la src/components/ || true
+
+# Build l'application avec sortie détaillée
+RUN npm run build 2>&1
 
 # Production stage
 FROM nginx:alpine

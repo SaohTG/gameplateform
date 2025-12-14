@@ -12,5 +12,13 @@ export default defineConfig({
       ignored: ["**/src-tauri/**"],
     },
   },
+  build: {
+    commonjsOptions: {
+      transformMixedEsModules: true,
+    },
+  },
+  optimizeDeps: {
+    exclude: ["@tauri-apps/api"],
+  },
 });
 

@@ -155,15 +155,19 @@ export const useGameStore = create<GameStore>((set, get) => ({
     }
     
     // Si on est dans Tauri, utiliser l'API Tauri
-    try {
-      const { invoke } = await import("@tauri-apps/api/tauri");
-      if (game.executablePath) {
-        await invoke("launch_game", { path: game.executablePath });
-      } else if (game.launchCommand) {
-        await invoke("launch_game_command", { command: game.launchCommand });
+    // Note: @tauri-apps/api n'est disponible que dans l'environnement Tauri
+    if (typeof window !== 'undefined' && '__TAURI__' in window) {
+      try {
+        const { invoke } = await import("@tauri-apps/api/tauri");
+        if (game.executablePath) {
+          await invoke("launch_game", { path: game.executablePath });
+        } else if (game.launchCommand) {
+          await invoke("launch_game_command", { command: game.launchCommand });
+        }
+      } catch (error) {
+        console.log("Erreur lors du lancement du jeu:", error);
       }
-    } catch (error) {
-      // Pas dans Tauri, ignorer l'erreur
+    } else {
       console.log("Lancement de jeu non disponible en version web");
     }
   },
