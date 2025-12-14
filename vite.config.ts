@@ -1,10 +1,5 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
-import { fileURLToPath } from "node:url";
-import { dirname, resolve } from "node:path";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -21,6 +16,15 @@ export default defineConfig({
     commonjsOptions: {
       transformMixedEsModules: true,
     },
+    rollupOptions: {
+      // Exclure @tauri-apps/api du bundle
+      external: (id) => {
+        if (id.startsWith('@tauri-apps/')) {
+          return true;
+        }
+        return false;
+      },
+    },
   },
   optimizeDeps: {
     exclude: ["@tauri-apps/api"],
@@ -28,7 +32,7 @@ export default defineConfig({
   resolve: {
     alias: {
       // Stub pour @tauri-apps/api en version web
-      '@tauri-apps/api/tauri': resolve(__dirname, './src/utils/tauri-stub.ts'),
+      '@tauri-apps/api/tauri': new URL('./src/utils/tauri-stub.ts', import.meta.url).href,
     },
   },
 });
