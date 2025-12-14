@@ -3,9 +3,6 @@
 @tailwind utilities;
 
 @layer base {
-  * {
-    @apply border-border;
-  }
   body {
     @apply bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-slate-100;
     font-family: 'Inter', system-ui, sans-serif;
